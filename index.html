@@ -378,6 +378,7 @@
               <form id="hero-form" class="space-y-3" novalidate>
                 <input type="text" name="hero-nombre" placeholder="Tu nombre completo" required class="w-full px-4 py-3 rounded-xl bg-white/[0.08] border border-white/10 text-white placeholder:text-white/30 text-sm focus:border-naranja/50 focus:ring-1 focus:ring-naranja/30 focus:outline-none transition-all">
                 <input type="tel" name="hero-celular" placeholder="Tu número de celular" required class="w-full px-4 py-3 rounded-xl bg-white/[0.08] border border-white/10 text-white placeholder:text-white/30 text-sm focus:border-naranja/50 focus:ring-1 focus:ring-naranja/30 focus:outline-none transition-all">
+                <input type="email" name="hero-correo" placeholder="Tu correo electrónico" required class="w-full px-4 py-3 rounded-xl bg-white/[0.08] border border-white/10 text-white placeholder:text-white/30 text-sm focus:border-naranja/50 focus:ring-1 focus:ring-naranja/30 focus:outline-none transition-all">
                 <select name="hero-seguro" required class="w-full px-4 py-3 rounded-xl bg-white/[0.08] border border-white/10 text-white/50 text-sm focus:border-naranja/50 focus:ring-1 focus:ring-naranja/30 focus:outline-none transition-all appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23ffa600%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem;">
                   <option value="" disabled selected>¿Qué tipo de seguro necesitas?</option>
                   <option value="salud">Póliza de Salud</option>
@@ -786,11 +787,11 @@
                     <label for="tipo-seguro" class="block text-sm font-semibold text-azul mb-1.5">Tipo de Seguro <span class="text-red-500">*</span></label>
                     <select id="tipo-seguro" name="tipo-seguro" required aria-required="true" aria-describedby="tipo-seguro-error" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/60 text-azul text-sm focus:border-naranja focus:ring-2 focus:ring-naranja/20 focus:bg-white focus:outline-none transition-all appearance-none cursor-pointer" style="background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23bdbbbc%22 stroke-width=%222%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1rem;">
                       <option value="" disabled selected>Selecciona una opción</option>
-                      <option value="salud">Póliza de Salud</option>
-                      <option value="prepagada">Medicina Prepagada</option>
-                      <option value="vida">Seguro de Vida</option>
-                      <option value="complementario">Plan Complementario</option>
-                      <option value="otro">Otro / No estoy seguro</option>
+                      <option value="Póliza salud">Póliza de Salud</option>
+                      <option value="Medicina prepagada">Medicina Prepagada</option>
+                      <option value="Seguro de vida">Seguro de Vida</option>
+                      <option value="Plan complementario">Plan Complementario</option>
+                      <option value="Otro / No estoy seguro">Otro / No estoy seguro</option>
                     </select>
                     <span id="tipo-seguro-error" class="text-red-500 text-xs mt-1 hidden" role="alert"></span>
                   </div>
@@ -804,6 +805,9 @@
                 <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="check-circle-2" class="w-8 h-8 text-green-600"></i></div>
                 <h3 class="text-xl font-bold text-azul mb-2">¡Solicitud Enviada!</h3>
                 <p class="text-gray-500 text-sm leading-relaxed max-w-sm mx-auto">Uno de nuestros asesores se comunicará contigo en menos de 24 horas. ¡Gracias por confiar en nosotros!</p>
+              </div>
+              <div id="contact-form-error" class="hidden mt-4 p-4 rounded-xl bg-red-50 border border-red-200">
+                <p class="text-red-600 text-sm text-center">Ocurrió un error al enviar. Por favor intenta de nuevo o escríbenos directamente a <a href="mailto:info@saludyvida360.com" class="font-semibold underline">info@saludyvida360.com</a>.</p>
               </div>
             </div>
           </div>
@@ -1040,9 +1044,10 @@
         e.preventDefault();
         const nombre  = heroForm.querySelector('[name="hero-nombre"]').value.trim();
         const celular = heroForm.querySelector('[name="hero-celular"]').value.trim();
+        const correo  = heroForm.querySelector('[name="hero-correo"]').value.trim();
         const seguro  = heroForm.querySelector('[name="hero-seguro"]').value;
 
-        if (!nombre || !celular || !seguro) {
+        if (!nombre || !celular || !correo || !seguro) {
           heroForm.querySelectorAll('input, select').forEach(el => {
             if (!el.value.trim()) el.classList.add('border-red-400/60');
           });
@@ -1056,6 +1061,7 @@
         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
           from_name:      nombre,
           phone:          celular,
+          from_email:     correo,
           insurance_type: seguro,
           to_email:       RECIPIENT_EMAIL,
         })
@@ -1096,6 +1102,7 @@
       field.addEventListener('blur', () => { if (!field.value && !field.classList.contains('border-red-400')) return; setFieldState(id, rules[id].test(field.value) ? 'valid' : 'error', rules[id].msg); });
       field.addEventListener('input', () => { if (field.classList.contains('border-red-400') && rules[id].test(field.value)) setFieldState(id, 'valid'); });
     });
+    const contactFormError = document.getElementById('contact-form-error');
     form.addEventListener('submit', e => {
       e.preventDefault(); let valid = true;
       Object.keys(rules).forEach(id => {
@@ -1104,8 +1111,26 @@
       });
       if (valid) {
         const btn = form.querySelector('button[type="submit"]'); btn.disabled = true;
+        contactFormError.classList.add('hidden');
         btn.innerHTML = '<svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...';
-        setTimeout(() => { form.classList.add('hidden'); formSuccess.classList.remove('hidden'); lucide.createIcons(); }, 1500);
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          from_name:      document.getElementById('nombre').value.trim(),
+          phone:          document.getElementById('celular').value.trim(),
+          from_email:     document.getElementById('correo').value.trim(),
+          insurance_type: document.getElementById('tipo-seguro').value,
+          to_email:       RECIPIENT_EMAIL,
+        })
+        .then(() => {
+          form.classList.add('hidden');
+          formSuccess.classList.remove('hidden');
+          lucide.createIcons();
+        })
+        .catch(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i> Enviar Solicitud';
+          contactFormError.classList.remove('hidden');
+          lucide.createIcons();
+        });
       } else { const first = form.querySelector('[aria-invalid="true"]'); if (first) first.focus(); }
     });
 

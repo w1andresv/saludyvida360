@@ -386,11 +386,21 @@
                   <option value="complementario">Plan Complementario</option>
                   <option value="otro">Otro / No estoy seguro</option>
                 </select>
-                <button type="submit" class="w-full bg-naranja text-azul font-bold text-sm py-3.5 rounded-xl hover:bg-yellow-400 transition-all duration-300 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-naranja/20">
+                <button type="submit" id="hero-submit-btn" class="w-full bg-naranja text-azul font-bold text-sm py-3.5 rounded-xl hover:bg-yellow-400 transition-all duration-300 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-naranja/20">
                   <i data-lucide="send" class="w-4 h-4"></i>
                   Solicitar Cotización Gratis
                 </button>
               </form>
+              <div id="hero-form-success" class="hidden text-center py-4">
+                <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <i data-lucide="check-circle-2" class="w-6 h-6 text-green-400"></i>
+                </div>
+                <p class="text-white font-bold text-sm mb-1">¡Solicitud enviada!</p>
+                <p class="text-white/50 text-xs">Un asesor te contactará en menos de 24 horas.</p>
+              </div>
+              <div id="hero-form-error" class="hidden mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                <p class="text-red-400 text-xs text-center">Ocurrió un error. Por favor intenta de nuevo o escríbenos directamente a <a href="mailto:info@saludyvida360.com" class="underline">info@saludyvida360.com</a>.</p>
+              </div>
               <p class="text-white/30 text-[11px] text-center mt-4 leading-relaxed">
                 <i data-lucide="lock" class="w-3 h-3 inline -mt-0.5"></i>
                 Tu información está protegida y nunca será compartida.
@@ -899,8 +909,15 @@
     </a>
   </div>
 
+  <!-- ======================== EMAILJS SDK ======================== -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
   <!-- ======================== JAVASCRIPT ======================== -->
   <script>
+    // ====== EMAILJS INIT ======
+    // Reemplaza 'YOUR_PUBLIC_KEY' con tu Public Key de emailjs.com > Account > General
+    emailjs.init({ publicKey: 'zzitzWLX16SwTdKnI' });
+
     lucide.createIcons();
 
     // ====== HEADER SCROLL ======
@@ -1011,18 +1028,49 @@
     });
 
     // ====== HERO FORM ======
+    // EmailJS: reemplaza los valores de SERVICE_ID y TEMPLATE_ID con los tuyos de emailjs.com
+    // El template debe tener las variables: {{from_name}}, {{phone}}, {{insurance_type}}, {{to_email}}
+    const EMAILJS_SERVICE_ID  = 'service_2svjmlr';   // e.g. 'service_abc123'
+    const EMAILJS_TEMPLATE_ID = '9wqb0ao';  // e.g. 'template_xyz456'
+    const RECIPIENT_EMAIL     = 'info@saludyvida360.com';
+
     const heroForm = document.getElementById('hero-form');
     if (heroForm) {
       heroForm.addEventListener('submit', e => {
         e.preventDefault();
-        const n = heroForm.querySelector('[name="hero-nombre"]').value;
-        const c = heroForm.querySelector('[name="hero-celular"]').value;
-        const s = heroForm.querySelector('[name="hero-seguro"]').value;
-        const mn = document.getElementById('nombre');
-        const mc = document.getElementById('celular');
-        const ms = document.getElementById('tipo-seguro');
-        if (mn && n) mn.value = n; if (mc && c) mc.value = c; if (ms && s) ms.value = s;
-        document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });
+        const nombre  = heroForm.querySelector('[name="hero-nombre"]').value.trim();
+        const celular = heroForm.querySelector('[name="hero-celular"]').value.trim();
+        const seguro  = heroForm.querySelector('[name="hero-seguro"]').value;
+
+        if (!nombre || !celular || !seguro) {
+          heroForm.querySelectorAll('input, select').forEach(el => {
+            if (!el.value.trim()) el.classList.add('border-red-400/60');
+          });
+          return;
+        }
+
+        const btn = document.getElementById('hero-submit-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg> Enviando...';
+
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          from_name:      nombre,
+          phone:          celular,
+          insurance_type: seguro,
+          to_email:       RECIPIENT_EMAIL,
+        })
+        .then(() => {
+          heroForm.classList.add('hidden');
+          document.getElementById('hero-form-error').classList.add('hidden');
+          document.getElementById('hero-form-success').classList.remove('hidden');
+          lucide.createIcons();
+        })
+        .catch(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Solicitar Cotización Gratis';
+          document.getElementById('hero-form-error').classList.remove('hidden');
+          lucide.createIcons();
+        });
       });
     }
 
